@@ -8,25 +8,28 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 def reFormat(message):
     message = str(message).strip('/reformat ')
-    starRegex = r'^\*.*\*$' # WA bold
-    tildeRegex = r'^~.*~$'  # WA strikethrough
-    underscoreRegex = r'^_.*_$' # WA italic
-    backtickRegex = r'^```.*```$' # WA monospace
+    # print(message, type(message)) # for debugging
+    starRegex = r'\*(.*?)\*'  # Updated bold regex
+    tildeRegex = r'~(.*?)~'  # Updated strikethrough regex
+    underscoreRegex = r'_(.*?)_'  # Updated italic regex
 
-    if re.search(starRegex, message):
-        return f'<b>{message[1:-1]}</b>'
-    elif re.search(tildeRegex, message):
-        return f'<s>{message[1:-1]}</s>'
-    elif re.search(underscoreRegex, message):
-        return f'<i>{message[1:-1]}</i>'
-    elif re.search(backtickRegex, message):
-        return f'<tt>{message[3:-3]}</tt>'
-    return False
+    boldList = re.findall(starRegex, message)
+    STList = re.findall(tildeRegex, message)
+    italicList = re.findall(underscoreRegex, message)
+
+    for bold in boldList:
+        message = message.replace(f'*{bold}*', f'<b>{bold}</b>')
+    for st in STList:
+        message = message.replace(f'~{st}~', f'<s>{st}</s>')
+    for italic in italicList:
+        message = message.replace(f'_{italic}_', f'<i>{italic}</i>')
+    
+    return message
 
 
 @bot.message_handler(commands=['start', 'hello', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "👋 Welcome to Unformatter:\n A Whatsapp <-> Telegram text formatting utility bot. Use the \"/reformat <text>\" command to begin formatting your text!")
+    bot.reply_to(message, "👋 Welcome to Unformat Bot:\n A Whatsapp <-> Telegram text formatting utility bot. Use the \"/reformat <text>\" command to begin formatting your text!")
 
 @bot.message_handler(commands=['reformat'])
 def sendReFormatMsg(message):
