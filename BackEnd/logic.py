@@ -20,6 +20,7 @@ def reFormat(message):
 def main():
     try:
         userInput = input('Enter a string: ') # replace with telegram app route for input later
+        print(reFormat(userInput))
     except:
         pass
 

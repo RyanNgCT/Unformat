@@ -1,0 +1,7 @@
+# development
+*backenv/
+testing/
+.DS_Store
+
+# secrets
+.env

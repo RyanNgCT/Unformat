@@ -1,27 +1,39 @@
-from telebot_router import TeleBot
+import telebot, re
 
-app = TeleBot(__name__)
+BOT_TOKEN = ''
+with open('.env', 'r') as f:
+    rawkey = f.readline()
+    _, _, BOT_TOKEN = str(rawkey).rpartition('=')
+bot = telebot.TeleBot(BOT_TOKEN)
 
-@app.route('/tele2wa ?(.*)')
-def telegram2WhatsappFormat(message, cmd):
-    chat_dest = message['chat']['id']
-    msg = "Command Received: {}".format(cmd)
+def reFormat(message):
+    message = str(message).strip('/reformat ')
+    starRegex = r'^\*.*\*$' # WA bold
+    tildeRegex = r'^~.*~$'  # WA strikethrough
+    underscoreRegex = r'^_.*_$' # WA italic
+    backtickRegex = r'^```.*```$' # WA monospace
 
-    app.send_message(chat_dest, msg)
+    if re.search(starRegex, message):
+        return f'<b>{message[1:-1]}</b>'
+    elif re.search(tildeRegex, message):
+        return f'<s>{message[1:-1]}</s>'
+    elif re.search(underscoreRegex, message):
+        return f'<i>{message[1:-1]}</i>'
+    elif re.search(backtickRegex, message):
+        return f'<tt>{message[3:-3]}</tt>'
+    return False
 
 
-@app.route('(?!/).+')
-def test(message):
-    pass
+@bot.message_handler(commands=['start', 'hello'])
+def send_welcome(message):
+    bot.reply_to(message, "Howdy, how are you doing?")
 
-def main():
-    pass
+@bot.message_handler(commands=['reformat'])
+def sendReFormatMsg(message):
+    res = reFormat(message.text)
+    if res:
+        bot.send_message(message.chat.id, res, parse_mode='html')
+    else:
+        bot.reply_to(message,"Please check the syntax of your input!") 
 
-if __name__ == '__main__':
-    key = ''
-    with open('.env', 'r') as f:
-        rawkey = f.readline()
-        _, _, key = str(rawkey).rpartition('=')
-    print(key)
-    # app.config['api_key'] = 'xxxxxxxx:enterYourBotKeyHereToTest'
-    # app.poll(debug=True)
+bot.infinity_polling()
