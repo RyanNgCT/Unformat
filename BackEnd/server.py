@@ -24,9 +24,9 @@ def reFormat(message):
     return False
 
 
-@bot.message_handler(commands=['start', 'hello'])
+@bot.message_handler(commands=['start', 'hello', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "Howdy, how are you doing?")
+    bot.reply_to(message, "👋 Welcome to Unformatter:\n A Whatsapp <-> Telegram text formatting utility bot. Use the \"/reformat <text>\" command to begin formatting your text!")
 
 @bot.message_handler(commands=['reformat'])
 def sendReFormatMsg(message):
