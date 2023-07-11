@@ -5,6 +5,8 @@ with open('.env', 'r') as f:
     rawkey = f.readline()
     _, _, BOT_TOKEN = str(rawkey).rpartition('=')
 bot = telebot.TeleBot(BOT_TOKEN)
+bot.remove_webhook()
+bot.set_webhook()
 
 def reFormat(message):
     message = str(message).strip('/reformat ')
