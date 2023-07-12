@@ -25,7 +25,8 @@ def unFormat(message):
     tBoldRegex = r'<b>(.*?)</b>'
     tStrikeThruRegex = r'<s>(.*?)</s>' 
     tItalicRegex = r'<i>(.*?)</i>'
-    tUnderLineRegex = r'<u>(.*?)</u>' # dk if will work
+    tUnderLineRegex = r'<u>(.*?)</u>'
+    tags_with_content = re.findall(r'<[^>]+>[^<]+</[^>]+>', message)  # Extract tags with content
 
     boldList = re.findall(tBoldRegex, message)
     STList = re.findall(tStrikeThruRegex, message)
@@ -39,17 +40,27 @@ def unFormat(message):
     for italic in italicList:
         message = message.replace(f'<i>{italic}</i>', f'_{italic}_')
 
+    tags_with_content = [re.sub(r'<[^>]+>', '', tag) for tag in tags_with_content if re.search(r'<[^>]+>', tag)]
+
     for underlined in underLineList:
         elementLen = len(underlined)
-        string = elementLen * '-'
-        message = message.replace(f'<u>{underlined}</u>', f"\n{underlined}\n{string}\n")
+        suffixStr = elementLen * '-'
+        if underlined == tags_with_content[0]:
+            prefixStr = f"{underlined}\n"
+            suffixStr += "\n"
+        elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
+            prefixStr = f"\n\n{underlined}\n"
+            suffixStr += "\n"
+        elif underlined == tags_with_content[-1]:
+            prefixStr = f"\n{underlined}\n"
+        message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
 
     return message
 
 
 def main():
     try:
-        userInput = input('Enter a string: ') # replace with telegram app route for input later
+        userInput = input('Enter a message: ') # replace with telegram app route for input later
         print(unFormat(userInput)) # can alternate btwn the two funcs above
     except:
         pass
