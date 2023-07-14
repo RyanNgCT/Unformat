@@ -7,4 +7,6 @@ Alpha Deployment (may be unstable): https://t.me/UnformatterBot
 
 ## Todo
 - [x] Whatsapp Formatting to Telegram
-- [ ] Telegram Formatting to Whatsapp (include underline text feature??)
+- [x] Telegram Formatting to Whatsapp
+    - [x] Additional underline feature for `Tele -> WA`
+- [ ] Bug Testing

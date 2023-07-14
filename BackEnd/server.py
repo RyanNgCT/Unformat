@@ -1,4 +1,4 @@
-import telebot, re, json
+import telebot, re
 
 BOT_TOKEN = ''
 with open('.env', 'r') as f:
@@ -26,7 +26,7 @@ def reFormat(message):
     for italic in italicList:
         message = message.replace(f'_{italic}_', f'<i>{italic}</i>')
 
-    return message
+    return message.strip()
 
 
 def unFormat(message):
