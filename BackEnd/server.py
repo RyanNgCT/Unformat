@@ -25,18 +25,18 @@ def reFormat(message):
         message = message.replace(f'~{st}~', f'<s>{st}</s>')
     for italic in italicList:
         message = message.replace(f'_{italic}_', f'<i>{italic}</i>')
-    
+
     return message
 
 
 def unFormat(message):
     command = '/tele2wa '
-    content = message.text[len(command):].strip()  # Remove the command part and strip any leading/trailing whitespace
-    formattedContent = content  # Initialize the formatted content with the original content
+    content = message.text
+    formattedContent = content[len(command):]
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
 
     for entity in message.entities:
-        offset = entity.offset - len(command) - 1 + offset_adjustment  # Adjust the entity offset
+        offset = entity.offset - len(command) + offset_adjustment # Adjust the entity offset
         if entity.type == 'bold':
             formattedContent = formattedContent[:offset] + '*' + formattedContent[offset:offset + entity.length] + '*' + formattedContent[offset + entity.length:]
             offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
@@ -47,8 +47,7 @@ def unFormat(message):
             formattedContent = formattedContent[:offset] + '~' + formattedContent[offset:offset + entity.length] + '~' + formattedContent[offset + entity.length:]
             offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
 
-    print(formattedContent)
-    return formattedContent
+    return formattedContent.strip()
 
 
     # for underlined in underLineList:
@@ -75,7 +74,7 @@ def sendReFormatMsg(message):
     if res:
         bot.send_message(message.chat.id, res, parse_mode='html')
     else:
-        bot.reply_to(message,"Please check the syntax of your input!") 
+        bot.reply_to(message,"Please check the syntax of your input!")
 
 @bot.message_handler(commands=['tele2wa'])
 def sendUnFormatMsg(message):
@@ -83,6 +82,6 @@ def sendUnFormatMsg(message):
     if res:
         bot.send_message(message.chat.id, res)
     else:
-        bot.reply_to(message,"Please check the syntax of your input!") 
+        bot.reply_to(message,"Please check the syntax of your input!")
 
 bot.infinity_polling()
