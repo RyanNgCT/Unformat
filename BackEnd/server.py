@@ -10,7 +10,7 @@ bot.set_webhook()
 
 def reFormat(message):
     message = str(message).strip('/wa2tele ')
-    print(message)
+    # print(message)
     starRegex = r'\*(.*?)\*'  # Updated bold regex
     tildeRegex = r'~(.*?)~'  # Updated strikethrough regex
     underscoreRegex = r'_(.*?)_'  # Updated italic regex
@@ -47,10 +47,11 @@ def unFormat(message):
             formattedContent = formattedContent[:offset] + '~' + formattedContent[offset:offset + entity.length] + '~' + formattedContent[offset + entity.length:]
             offset_adjustment += 2
         elif entity.type == 'underline':
-            underlineStr = f'\n{entity.length * "="}\n'
+            underlineStr = f'\n{entity.length * "="}'
             formattedContent = formattedContent[:offset] + formattedContent[offset:offset + entity.length] + underlineStr + formattedContent[offset + entity.length:]
-            offset_adjustment += entity.length + 2
-
+            offset_adjustment += entity.length + 1
+    
+    #print(formattedContent.strip())
     return formattedContent.strip()
 
 
