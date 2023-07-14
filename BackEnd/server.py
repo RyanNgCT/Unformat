@@ -9,7 +9,7 @@ bot.remove_webhook()
 bot.set_webhook()
 
 def reFormat(message):
-    message = str(message).strip('/reformat ')
+    message = str(message).strip('/wa2tele ')
     print(message)
     starRegex = r'\*(.*?)\*'  # Updated bold regex
     tildeRegex = r'~(.*?)~'  # Updated strikethrough regex
@@ -30,12 +30,10 @@ def reFormat(message):
 
 
 def unFormat(message):
-    command = '/unformat '
+    command = '/tele2wa '
     content = message.text[len(command):].strip()  # Remove the command part and strip any leading/trailing whitespace
     formattedContent = content  # Initialize the formatted content with the original content
-
-    for entity in message.entities:
-         offset_adjustment = 0  # Initialize the cumulative offset adjustment
+    offset_adjustment = 0  # Initialize the cumulative offset adjustment
 
     for entity in message.entities:
         offset = entity.offset - len(command) - 1 + offset_adjustment  # Adjust the entity offset
@@ -44,33 +42,34 @@ def unFormat(message):
             offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
         elif entity.type == 'italic':
             formattedContent = formattedContent[:offset] + '_' + formattedContent[offset:offset + entity.length] + '_' + formattedContent[offset + entity.length:]
-            offset_adjustment += 2
+            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
         elif entity.type == 'strikethrough':
             formattedContent = formattedContent[:offset] + '~' + formattedContent[offset:offset + entity.length] + '~' + formattedContent[offset + entity.length:]
-            offset_adjustment += 2 
-        elif entity.type == 'underline':
-            pass
+            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
 
-    # # for underlined in underLineList:
-    # #     elementLen = len(underlined)
-    # #     suffixStr = elementLen * '-'
-    # #     if underlined == tags_with_content[0]:
-    # #         prefixStr = f"{underlined}\n"
-    # #         suffixStr += "\n"
-    # #     elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
-    # #         prefixStr = f"\n\n{underlined}\n"
-    # #         suffixStr += "\n"
-    # #     elif underlined == tags_with_content[-1]:
-    # #         prefixStr = f"\n{underlined}\n"
-    # #     message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
+    print(formattedContent)
     return formattedContent
+
+
+    # for underlined in underLineList:
+    #     elementLen = len(underlined)
+    #     suffixStr = elementLen * '-'
+    #     if underlined == tags_with_content[0]:
+    #         prefixStr = f"{underlined}\n"
+    #         suffixStr += "\n"
+    #     elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
+    #         prefixStr = f"\n\n{underlined}\n"
+    #         suffixStr += "\n"
+    #     elif underlined == tags_with_content[-1]:
+    #         prefixStr = f"\n{underlined}\n"
+    #     message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
 
 
 @bot.message_handler(commands=['start', 'hello', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "👋 Welcome to Unformat Bot:\n A Whatsapp <-> Telegram text formatting utility bot. Use the \"/reformat <text>\" command to begin formatting your text!")
+    bot.reply_to(message, "👋 Welcome to Unformat Bot:\n- A Whatsapp <-> Telegram text formatting utility bot.\n- Use the \"/wa2tele <text>\" or \"/tele2wa <text>\" commands to begin formatting your texts!")
 
-@bot.message_handler(commands=['reformat'])
+@bot.message_handler(commands=['wa2tele'])
 def sendReFormatMsg(message):
     res = reFormat(message.text)
     if res:
@@ -78,7 +77,7 @@ def sendReFormatMsg(message):
     else:
         bot.reply_to(message,"Please check the syntax of your input!") 
 
-@bot.message_handler(commands=['unformat'])
+@bot.message_handler(commands=['tele2wa'])
 def sendUnFormatMsg(message):
     res = unFormat(message)
     if res:
