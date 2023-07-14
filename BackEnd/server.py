@@ -39,34 +39,25 @@ def unFormat(message):
         offset = entity.offset - len(command) + offset_adjustment # Adjust the entity offset
         if entity.type == 'bold':
             formattedContent = formattedContent[:offset] + '*' + formattedContent[offset:offset + entity.length] + '*' + formattedContent[offset + entity.length:]
-            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
+            offset_adjustment += 2
         elif entity.type == 'italic':
             formattedContent = formattedContent[:offset] + '_' + formattedContent[offset:offset + entity.length] + '_' + formattedContent[offset + entity.length:]
-            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
+            offset_adjustment += 2
         elif entity.type == 'strikethrough':
             formattedContent = formattedContent[:offset] + '~' + formattedContent[offset:offset + entity.length] + '~' + formattedContent[offset + entity.length:]
-            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
+            offset_adjustment += 2
+        elif entity.type == 'underline':
+            underlineStr = f'\n{entity.length * "="}\n'
+            formattedContent = formattedContent[:offset] + formattedContent[offset:offset + entity.length] + underlineStr + formattedContent[offset + entity.length:]
+            offset_adjustment += entity.length + 2
 
     return formattedContent.strip()
-
-
-    # for underlined in underLineList:
-    #     elementLen = len(underlined)
-    #     suffixStr = elementLen * '-'
-    #     if underlined == tags_with_content[0]:
-    #         prefixStr = f"{underlined}\n"
-    #         suffixStr += "\n"
-    #     elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
-    #         prefixStr = f"\n\n{underlined}\n"
-    #         suffixStr += "\n"
-    #     elif underlined == tags_with_content[-1]:
-    #         prefixStr = f"\n{underlined}\n"
-    #     message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
 
 
 @bot.message_handler(commands=['start', 'hello', 'help'])
 def send_welcome(message):
     bot.reply_to(message, "👋 Welcome to Unformat Bot:\n- A Whatsapp <-> Telegram text formatting utility bot.\n- Use the \"/wa2tele <text>\" or \"/tele2wa <text>\" commands to begin formatting your texts!")
+
 
 @bot.message_handler(commands=['wa2tele'])
 def sendReFormatMsg(message):
@@ -76,6 +67,7 @@ def sendReFormatMsg(message):
     else:
         bot.reply_to(message,"Please check the syntax of your input!")
 
+
 @bot.message_handler(commands=['tele2wa'])
 def sendUnFormatMsg(message):
     res = unFormat(message)
@@ -83,5 +75,6 @@ def sendUnFormatMsg(message):
         bot.send_message(message.chat.id, res)
     else:
         bot.reply_to(message,"Please check the syntax of your input!")
+
 
 bot.infinity_polling()
