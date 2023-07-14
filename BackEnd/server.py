@@ -1,4 +1,4 @@
-import telebot, re
+import telebot, re, json
 
 BOT_TOKEN = ''
 with open('.env', 'r') as f:
@@ -30,41 +30,40 @@ def reFormat(message):
 
 
 def unFormat(message):
-    message = str(message).strip('/unformat ')
-    tBoldRegex = r'\*\*(.*?)\*\*'
-    tStrikeThruRegex = r'~~(.*?)~~' 
-    tItalicRegex = r'__(.*?)__'
-    tUnderLineRegex = r'<u>(.*?)</u>'
-    # tags_with_content = re.findall(r'<[^>]+>[^<]+</[^>]+>', message)  # Extract tags with content
+    command = '/unformat '
+    content = message.text[len(command):].strip()  # Remove the command part and strip any leading/trailing whitespace
+    formattedContent = content  # Initialize the formatted content with the original content
 
-    boldList = re.findall(tBoldRegex, message)
-    STList = re.findall(tStrikeThruRegex, message)
-    italicList = re.findall(tItalicRegex, message)
-    print(boldList, STList, italicList)
+    for entity in message.entities:
+         offset_adjustment = 0  # Initialize the cumulative offset adjustment
 
-    # underLineList = re.findall(tUnderLineRegex, message)
-    for bold in boldList:
-        message = message.replace(f'*{bold}*', bold)
-    for st in STList:
-        message = message.replace(f'~{st}~', st)
-    for italic in italicList:
-        message = message.replace(f'_{italic}_', italic)
+    for entity in message.entities:
+        offset = entity.offset - len(command) - 1 + offset_adjustment  # Adjust the entity offset
+        if entity.type == 'bold':
+            formattedContent = formattedContent[:offset] + '*' + formattedContent[offset:offset + entity.length] + '*' + formattedContent[offset + entity.length:]
+            offset_adjustment += 2  # Update the offset adjustment for the inserted formatting symbols
+        elif entity.type == 'italic':
+            formattedContent = formattedContent[:offset] + '_' + formattedContent[offset:offset + entity.length] + '_' + formattedContent[offset + entity.length:]
+            offset_adjustment += 2
+        elif entity.type == 'strikethrough':
+            formattedContent = formattedContent[:offset] + '~' + formattedContent[offset:offset + entity.length] + '~' + formattedContent[offset + entity.length:]
+            offset_adjustment += 2 
+        elif entity.type == 'underline':
+            pass
 
-    # tags_with_content = [re.sub(r'<[^>]+>', '', tag) for tag in tags_with_content if re.search(r'<[^>]+>', tag)]
-
-    # for underlined in underLineList:
-    #     elementLen = len(underlined)
-    #     suffixStr = elementLen * '-'
-    #     if underlined == tags_with_content[0]:
-    #         prefixStr = f"{underlined}\n"
-    #         suffixStr += "\n"
-    #     elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
-    #         prefixStr = f"\n\n{underlined}\n"
-    #         suffixStr += "\n"
-    #     elif underlined == tags_with_content[-1]:
-    #         prefixStr = f"\n{underlined}\n"
-    #     message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
-    return message
+    # # for underlined in underLineList:
+    # #     elementLen = len(underlined)
+    # #     suffixStr = elementLen * '-'
+    # #     if underlined == tags_with_content[0]:
+    # #         prefixStr = f"{underlined}\n"
+    # #         suffixStr += "\n"
+    # #     elif underlined != tags_with_content[-1] and underlined != tags_with_content[0]:
+    # #         prefixStr = f"\n\n{underlined}\n"
+    # #         suffixStr += "\n"
+    # #     elif underlined == tags_with_content[-1]:
+    # #         prefixStr = f"\n{underlined}\n"
+    # #     message = message.replace(f'<u>{underlined}</u>', f"{prefixStr}{suffixStr}")
+    return formattedContent
 
 
 @bot.message_handler(commands=['start', 'hello', 'help'])
@@ -81,8 +80,7 @@ def sendReFormatMsg(message):
 
 @bot.message_handler(commands=['unformat'])
 def sendUnFormatMsg(message):
-    print(bot.get_messages(message.chat.id, parse_mode='html'))
-    res = unFormat(message.text)
+    res = unFormat(message)
     if res:
         bot.send_message(message.chat.id, res)
     else:
