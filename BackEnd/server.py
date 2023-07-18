@@ -44,33 +44,34 @@ def unFormat(message):
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
     emoji_positions = []
 
-    for entity in message.entities:
-        offset = entity.offset + offset_adjustment  # Adjust the entity offset
-        if entity.type == "bold":
-            content = content[:offset] + "*" + content[offset: offset + entity.length] \
-                               + "*" + content[offset + entity.length :]
-            offset_adjustment += 2
-        elif entity.type == "italic":
-            content = content[:offset] + "_" + content[offset: offset + entity.length] \
-                               + "_" + content[offset + entity.length :]
-            offset_adjustment += 2
-        elif entity.type == "strikethrough":
-            content = content[:offset] + "~" + content[offset: offset + entity.length] \
-                               + "~" + content[offset + entity.length :]
-            offset_adjustment += 2
-        elif entity.type == "underline":
-            underlineStr = f'\n{entity.length * "="}'
-            content = content[:offset] + content[offset: offset + entity.length] \
-                               + underlineStr + content[offset + entity.length :]
-            offset_adjustment += entity.length + 1
-        elif entity.type == "emoji":
-            emoji_positions.append(offset)
+    if message.entities: # check for nonetype -> i.e. user enters WA input without any formatting / normal tele w/o formatting
+        for entity in message.entities:
+            offset = entity.offset + offset_adjustment  # Adjust the entity offset
+            if entity.type == "bold":
+                content = content[:offset] + "*" + content[offset: offset + entity.length] \
+                                + "*" + content[offset + entity.length :]
+                offset_adjustment += 2
+            elif entity.type == "italic":
+                content = content[:offset] + "_" + content[offset: offset + entity.length] \
+                                + "_" + content[offset + entity.length :]
+                offset_adjustment += 2
+            elif entity.type == "strikethrough":
+                content = content[:offset] + "~" + content[offset: offset + entity.length] \
+                                + "~" + content[offset + entity.length :]
+                offset_adjustment += 2
+            elif entity.type == "underline":
+                underlineStr = f'\n{entity.length * "="}'
+                content = content[:offset] + content[offset: offset + entity.length] \
+                                + underlineStr + content[offset + entity.length :]
+                offset_adjustment += entity.length + 1
+            elif entity.type == "emoji":
+                emoji_positions.append(offset)
 
-    for position in emoji_positions:
-        offset = position + offset_adjustment
-        content = content[:offset] + content[position] + content[offset:]
-        if emoji.is_emoji(content[position]):
-            offset_adjustment += 1
+        for position in emoji_positions:
+            offset = position + offset_adjustment
+            content = content[:offset] + content[position] + content[offset:]
+            if emoji.is_emoji(content[position]):
+                offset_adjustment += 1
 
     return content
 
@@ -79,7 +80,7 @@ def unFormat(message):
 def send_welcome(message):
     bot.reply_to(
         message,
-        '👋 Welcome to Unformat Bot:\n- A Whatsapp <-> Telegram text formatting utility bot.\n- Use the "/wa2tele <text>" or "/tele2wa <text>" commands to begin formatting your texts!',
+        '👋 Welcome to Unformat Bot:\n- A Whatsapp <-> Telegram text formatting utility bot.\n- Use the "/wa2tele" or "/tele2wa" commands to begin formatting your texts!',
     )
 
 
