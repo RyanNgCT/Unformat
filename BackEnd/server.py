@@ -1,12 +1,18 @@
-import telebot, re
+import telebot, re, os, platform, emoji
 
 BOT_TOKEN = ""
-with open(".env", "r") as f:
+if os.name == 'nt':
+    path = '.env'
+else:
+    path = '/home/0x55AA/Unformatter/.env'
+
+with open(path, 'r') as f:
     rawkey = f.readline()
     _, _, BOT_TOKEN = str(rawkey).rpartition("=")
 bot = telebot.TeleBot(BOT_TOKEN)
 bot.remove_webhook()
 bot.set_webhook()
+print(f'Running on {platform.system()}...\nProcess id: {os.getpid()}')
 
 
 def replace_tags_recursive(text, starRegex, tildeRegex, underscoreRegex):
@@ -21,7 +27,6 @@ def replace_tags_recursive(text, starRegex, tildeRegex, underscoreRegex):
 
 def reFormat(message):
     message = str(message).strip("/wa2tele ")
-    # print(message)
     starRegex = r"\*(.*?)\*"  # Updated bold regex
     tildeRegex = r"~(.*?)~"  # Updated strikethrough regex
     underscoreRegex = r"_(.*?)_"  # Updated italic regex
@@ -35,33 +40,39 @@ def reFormat(message):
 
 
 def unFormat(message):
-    command = "/tele2wa "
     content = message.text
-    formattedContent = content[len(command) :]
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
+    emoji_positions = []
 
     for entity in message.entities:
-        offset = entity.offset - len(command) + offset_adjustment # Adjust the entity offset
+        offset = entity.offset + offset_adjustment  # Adjust the entity offset
         if entity.type == "bold":
-            formattedContent = formattedContent[:offset] + "*" + formattedContent[offset : offset + entity.length] \
-                    + "*" + formattedContent[offset + entity.length :]
+            content = content[:offset] + "*" + content[offset: offset + entity.length] \
+                               + "*" + content[offset + entity.length :]
             offset_adjustment += 2
         elif entity.type == "italic":
-            formattedContent = formattedContent[:offset] + "_" + formattedContent[offset : offset + entity.length] \
-                                + "_" + formattedContent[offset + entity.length :]
+            content = content[:offset] + "_" + content[offset: offset + entity.length] \
+                               + "_" + content[offset + entity.length :]
             offset_adjustment += 2
         elif entity.type == "strikethrough":
-            formattedContent = formattedContent[:offset] + "~" + formattedContent[offset : offset + entity.length] \
-                                + "~" + formattedContent[offset + entity.length :]
+            content = content[:offset] + "~" + content[offset: offset + entity.length] \
+                               + "~" + content[offset + entity.length :]
             offset_adjustment += 2
         elif entity.type == "underline":
             underlineStr = f'\n{entity.length * "="}'
-            formattedContent = formattedContent[:offset] + formattedContent[offset : offset + entity.length] \
-                + underlineStr + formattedContent[offset + entity.length :]
+            content = content[:offset] + content[offset: offset + entity.length] \
+                               + underlineStr + content[offset + entity.length :]
             offset_adjustment += entity.length + 1
+        elif entity.type == "emoji":
+            emoji_positions.append(offset)
 
-    # print(formattedContent.strip())
-    return formattedContent.strip()
+    for position in emoji_positions:
+        offset = position + offset_adjustment
+        content = content[:offset] + content[position] + content[offset:]
+        if emoji.is_emoji(content[position]):
+            offset_adjustment += 1
+
+    return content
 
 
 @bot.message_handler(commands=["start", "hello", "help"])
@@ -73,6 +84,12 @@ def send_welcome(message):
 
 
 @bot.message_handler(commands=["wa2tele"])
+def sendReFormatMsgHelper(message):
+    textReply = "Enter text to convert from WhatsApp to Telegram."
+    sent_msg = bot.send_message(message.chat.id, textReply)
+    bot.register_next_step_handler(sent_msg, sendReFormatMsg)
+
+
 def sendReFormatMsg(message):
     res = reFormat(message.text)
     if res:
@@ -82,6 +99,12 @@ def sendReFormatMsg(message):
 
 
 @bot.message_handler(commands=["tele2wa"])
+def sendUnFormatMsgHelper(message):
+    textReply = "Enter text to convert from Telegram to WhatsApp formatting."
+    sent_msg = bot.send_message(message.chat.id, textReply)
+    bot.register_next_step_handler(sent_msg, sendUnFormatMsg)
+
+
 def sendUnFormatMsg(message):
     res = unFormat(message)
     if res:
