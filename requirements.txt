@@ -1,1 +1,2 @@
-telebot
+telebot==0.0.5
+emoji==2.8.0

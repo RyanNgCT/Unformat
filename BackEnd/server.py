@@ -1,7 +1,7 @@
 import telebot, re, os, platform, emoji
 
 BOT_TOKEN = ""
-if os.name == 'nt':
+if platform.system() == 'Windows' or platform.system() == 'Darwin':
     path = '.env'
 else:
     path = '/home/0x55AA/Unformatter/.env'
