@@ -26,35 +26,16 @@ def replace_tags_recursive(text, starRegex, tildeRegex, underscoreRegex):
 
 
 def reFormat(message):
-    message = str(message).strip("/wa2tele ")
-    starRegex = r'\*(.*?)\*'  # Updated bold regex
-    tildeRegex = r'~(.*?)~'  # Updated strikethrough regex
-    underscoreRegex = r'_(.*?)_'  # Updated italic regex
+    starRegex = r"\*(.*?)\*"  # Updated bold regex
+    tildeRegex = r"~(.*?)~"  # Updated strikethrough regex
+    underscoreRegex = r"_(.*?)_"  # Updated italic regex
 
-    boldList = re.findall(starRegex, message)
-    STList = re.findall(tildeRegex, message)
-    italicList = re.findall(underscoreRegex, message)
-
-    for bold in boldList:
-        message = message.replace(f'*{bold}*', f'<b>{bold}</b>')
-    for st in STList:
-        message = message.replace(f'~{st}~', f'<s>{st}</s>')
-    for italic in italicList:
-        message = message.replace(f'_{italic}_', f'<i>{italic}</i>')
-    print(message)
+    previous_message = ""
+    while previous_message != message:
+        previous_message = message
+        message = replace_tags_recursive(message, starRegex, tildeRegex, underscoreRegex)
 
     return message.strip()
-
-    # starRegex = r"\*(.*?)\*"  # Updated bold regex
-    # tildeRegex = r"~(.*?)~"  # Updated strikethrough regex
-    # underscoreRegex = r"_(.*?)_"  # Updated italic regex
-
-    # previous_message = ""
-    # while previous_message != message:
-    #     previous_message = message
-    #     message = replace_tags_recursive(message, starRegex, tildeRegex, underscoreRegex)
-
-    # return message.strip()
 
 
 def unFormat(message):
