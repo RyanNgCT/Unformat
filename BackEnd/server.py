@@ -1,4 +1,5 @@
 import telebot, re, os, platform, emoji
+from py_w3c.validators.html.validator import HTMLValidator
 
 BOT_TOKEN = ""
 if platform.system() == 'Windows' or platform.system() == 'Darwin':
@@ -91,11 +92,17 @@ def sendReFormatMsgHelper(message):
 
 
 def sendReFormatMsg(message):
-    res = reFormat(message.text)
-    if res:
-        bot.send_message(message.chat.id, res, parse_mode="html")
-    else:
-        bot.reply_to(message, "Please check the syntax of your input!")
+    try:
+        res = reFormat(message.text)
+        if res:
+            # val = HTMLValidator()
+            # val.validate(res)
+            # if val.errors == []
+                bot.send_message(message.chat.id, res, parse_mode="html")
+        else:
+            bot.reply_to(message, "Please check the syntax of your input!")
+    except telebot.apihelper.ApiTelegramException: # catch tag mismatch
+        bot.reply_to(message, "An error occurred! Check that the input tags are in the right order.")
 
 
 @bot.message_handler(commands=["tele2wa"])
