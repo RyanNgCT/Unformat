@@ -1,5 +1,4 @@
 import telebot, re, os, platform, emoji
-from py_w3c.validators.html.validator import HTMLValidator
 
 BOT_TOKEN = ""
 if platform.system() == 'Windows' or platform.system() == 'Darwin':
@@ -44,9 +43,28 @@ def unFormat(message):
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
     emoji_positions = []
 
+    common_offsets = {}
+    offset_entities = {}
+    for entity in message.json['entities']: # reference key of the attribute of the message object
+        offset = entity['offset']
+        if offset not in offset_entities:
+            offset_entities[offset] = []
+        offset_entities[offset].append(entity)
+
+    # Identify common offsets with more than one dictionary in the list
+    for offset, entities in offset_entities.items():
+        if len(entities) > 1:
+            common_offsets[offset] = [entity['type'] for entity in entities]
+
+    print(common_offsets)
+
+    # start offset and entity types list -> i.e. [{0: 'bold'}, {0: 'italic'}, {0: 'underline'}, {22: 'strikethrough'}]
+    # offsetTypeList = [{int(entity['offset']) : str(entity['type'])} for entity in entityIndexList]
+
     if message.entities: # check for nonetype -> i.e. user enters WA input without any formatting / normal tele w/o formatting
         for entity in message.entities:
-            offset = entity.offset + offset_adjustment  # Adjust the entity offset
+            # Adjust the entity offset
+            offset = entity.offset + offset_adjustment
             if entity.type == "bold":
                 content = content[:offset] + "*" + content[offset: offset + entity.length] \
                                 + "*" + content[offset + entity.length :]
