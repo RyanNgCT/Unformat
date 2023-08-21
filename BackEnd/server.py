@@ -43,6 +43,7 @@ def unFormat(message):
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
     emoji_positions = []
 
+    print(message.json['entities'])
     if message.entities: # check for nonetype -> i.e. user enters WA input without any formatting / normal tele w/o formatting
         common_offsets = {}
         offset_entities = {}
@@ -57,13 +58,14 @@ def unFormat(message):
             if len(entities) > 1:
                 common_offsets[offset] = [entity['type'] for entity in entities]
 
+        order = ['bold', 'strikethrough', 'italic']
         for offset, entityList in common_offsets.items():
-            if 'underline' in entityList and len(entityList) > 2: # [b, u, i]
+            if 'underline' in entityList and len(entityList) > 2: # [b, u, i, s]
                 print('Three or more overlapping elements including underline. ', entityList)
             elif 'underline' in entityList: # catch [b, u]/[i, u]/[s, u]
                 print('Underline with one other element. ', entityList)
             elif len(entityList) >= 2:
-                print('Non-underline overlapping entities. ', entityList)      
+                print('Non-underline overlapping entities. ', entityList)
 
         for entity in message.entities:
             # Adjust the entity offset
