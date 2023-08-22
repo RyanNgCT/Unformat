@@ -43,7 +43,7 @@ def unFormat(message):
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
     emoji_positions = []
 
-    print(message.json['entities'])
+    print(message.json['entities'], '\n')
     if message.entities: # check for nonetype -> i.e. user enters WA input without any formatting / normal tele w/o formatting
         common_offsets = {}
         offset_entities = {}
@@ -58,6 +58,7 @@ def unFormat(message):
             if len(entities) > 1:
                 common_offsets[offset] = [entity['type'] for entity in entities]
 
+        print(common_offsets)
         order = ['bold', 'strikethrough', 'italic']
         for offset, entityList in common_offsets.items():
             if 'underline' in entityList and len(entityList) > 2: # [b, u, i, s]
@@ -67,27 +68,28 @@ def unFormat(message):
             elif len(entityList) >= 2:
                 print('Non-underline overlapping entities. ', entityList)
 
-        for entity in message.entities:
+        for entity in message.json['entities']:
             # Adjust the entity offset
-            offset = entity.offset + offset_adjustment
-            if entity.type == "bold":
-                content = content[:offset] + "*" + content[offset: offset + entity.length] \
-                                + "*" + content[offset + entity.length :]
+            offset = entity['offset'] + offset_adjustment
+            if entity['type'] == "bold":
+                content = content[:offset] + "*" + content[offset: offset + entity['length']] \
+                                + "*" + content[offset + entity['length'] :]
                 offset_adjustment += 2
-            elif entity.type == "italic":
-                content = content[:offset] + "_" + content[offset: offset + entity.length] \
-                                + "_" + content[offset + entity.length :]
+            elif entity['type'] == "italic":
+                content = content[:offset] + "_" + content[offset: offset + entity['length']] \
+                                + "_" + content[offset + entity['length'] :]
                 offset_adjustment += 2
-            elif entity.type == "strikethrough":
-                content = content[:offset] + "~" + content[offset: offset + entity.length] \
-                                + "~" + content[offset + entity.length :]
+            elif entity['type'] == "strikethrough":
+                content = content[:offset] + "~" + content[offset: offset + entity['length']] \
+                                + "~" + content[offset + entity['length'] :]
                 offset_adjustment += 2
-            elif entity.type == "underline":
-                underlineStr = f'\n{entity.length * "="}'
-                content = content[:offset] + content[offset: offset + entity.length] \
-                                + underlineStr + content[offset + entity.length :]
-                offset_adjustment += entity.length + 1
-            elif entity.type == "emoji":
+            elif entity['type'] == "underline":
+                lengthofUnderLine = entity['length']
+                underlineStr = f'\n{lengthofUnderLine * "="}'
+                content = content[:offset] + content[offset: offset + entity['length']] \
+                                + underlineStr + content[offset + entity['length'] :]
+                offset_adjustment += entity['length'] + 1
+            elif entity['type'] == "emoji":
                 emoji_positions.append(offset)
 
         for position in emoji_positions:
