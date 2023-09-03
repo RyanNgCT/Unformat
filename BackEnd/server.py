@@ -43,30 +43,30 @@ def unFormat(message):
     offset_adjustment = 0  # Initialize the cumulative offset adjustment
     emoji_positions = []
 
-    print(message.json['entities'], '\n')
+    # print(message.json['entities'], '\n')
     if message.entities: # check for nonetype -> i.e. user enters WA input without any formatting / normal tele w/o formatting
-        common_offsets = {}
-        offset_entities = {}
-        for entity in message.json['entities']: # reference key of the attribute of the message object
-            offset = entity['offset']
-            if offset not in offset_entities:
-                offset_entities[offset] = []
-            offset_entities[offset].append(entity)
+        # common_offsets = {}
+        # offset_entities = {}
+        # for entity in message.json['entities']: # reference key of the attribute of the message object
+        #     offset = entity['offset']
+        #     if offset not in offset_entities:
+        #         offset_entities[offset] = []
+        #     offset_entities[offset].append(entity)
 
-        # Identify common offsets with more than one dictionary in the list
-        for offset, entities in offset_entities.items():
-            if len(entities) > 1:
-                common_offsets[offset] = [entity['type'] for entity in entities]
+        # # Identify common offsets with more than one dictionary in the list
+        # for offset, entities in offset_entities.items():
+        #     if len(entities) > 1:
+        #         common_offsets[offset] = [entity['type'] for entity in entities]
 
-        print(common_offsets)
-        order = ['bold', 'strikethrough', 'italic']
-        for offset, entityList in common_offsets.items():
-            if 'underline' in entityList and len(entityList) > 2: # [b, u, i, s]
-                print('Three or more overlapping elements including underline. ', entityList)
-            elif 'underline' in entityList: # catch [b, u]/[i, u]/[s, u]
-                print('Underline with one other element. ', entityList)
-            elif len(entityList) >= 2:
-                print('Non-underline overlapping entities. ', entityList)
+        # print(common_offsets)
+        # order = ['bold', 'strikethrough', 'italic']
+        # for offset, entityList in common_offsets.items():
+        #     if 'underline' in entityList and len(entityList) > 2: # [b, u, i, s]
+        #         print('Three or more overlapping elements including underline. ', entityList)
+        #     elif 'underline' in entityList: # catch [b, u]/[i, u]/[s, u]
+        #         print('Underline with one other element. ', entityList)
+        #     elif len(entityList) >= 2:
+        #         print('Non-underline overlapping entities. ', entityList)
 
         for entity in message.json['entities']:
             # Adjust the entity offset
@@ -117,17 +117,17 @@ def sendReFormatMsgHelper(message):
 
 
 def sendReFormatMsg(message):
-    try:
-        res = reFormat(message.text)
-        if res:
-            # val = HTMLValidator()
-            # val.validate(res)
-            # if val.errors == []
+    if checkEntityContainsCmd(message):
+        bot.reply_to(message, "Please ensure you are not using slash commands in the input.")
+    else:
+        try:
+            res = reFormat(message.text)
+            if res:
                 bot.send_message(message.chat.id, res, parse_mode="html")
-        else:
-            bot.reply_to(message, "Please check the syntax of your input!")
-    except telebot.apihelper.ApiTelegramException: # catch tag mismatch
-        bot.reply_to(message, "An error occurred! Check that the input tags are in the right order.")
+            else:
+                bot.reply_to(message, "Please check the syntax of your input!")
+        except telebot.apihelper.ApiTelegramException: # catch tag mismatch
+            bot.reply_to(message, "An error occurred! Check that the input tags are in the right order.")
 
 
 @bot.message_handler(commands=["tele2wa"])
@@ -138,11 +138,22 @@ def sendUnFormatMsgHelper(message):
 
 
 def sendUnFormatMsg(message):
-    res = unFormat(message)
-    if res:
-        bot.send_message(message.chat.id, res)
+    if checkEntityContainsCmd(message):
+        bot.reply_to(message, "Please ensure you are not using slash commands in the input.")
     else:
-        bot.reply_to(message, "Please check the syntax of your input!")
+        res = unFormat(message)
+        if res:
+            bot.send_message(message.chat.id, res)
+        else:
+            bot.reply_to(message, "Please check the syntax of your input!")
 
+
+# ensure user cannot input bot command as input to either wa2tele or tele2wa
+def checkEntityContainsCmd(message):
+    if message.entities:
+        for entity in message.entities:
+            if entity.type == 'bot_command':
+                return True
+    return False
 
 bot.infinity_polling()
