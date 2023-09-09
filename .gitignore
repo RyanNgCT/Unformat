@@ -5,3 +5,5 @@ testing/
 
 # secrets
 .env
+.space
+Spacefile

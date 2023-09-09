@@ -1,14 +1,17 @@
 import telebot, re, os, platform, emoji
 
-BOT_TOKEN = ""
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+# BOT_TOKEN = ""
 if platform.system() == 'Windows' or platform.system() == 'Darwin':
     path = '.env'
-else:
-    path = '/home/0x55AA/Unformatter/.env'
+    with open(path, 'r') as f:
+        rawkey = f.readline()
+        _, _, BOT_TOKEN = str(rawkey).rpartition("=")
+# else:
+#     #path = '/home/0x55AA/Unformatter/.env'
+#     path = '.env'
 
-with open(path, 'r') as f:
-    rawkey = f.readline()
-    _, _, BOT_TOKEN = str(rawkey).rpartition("=")
 bot = telebot.TeleBot(BOT_TOKEN)
 bot.remove_webhook()
 bot.set_webhook()
